@@ -1,4 +1,5 @@
 mod help;
+mod start;
 
 #[derive(Debug, PartialEq)]
 pub enum Action {
@@ -26,7 +27,7 @@ pub fn perform_action(action: Action) {
     match action {
         Action::Help => help::help(),
         Action::TooManyArgs => println!("Too many args"),
-        Action::Start => println!("Start"),
+        Action::Start => start::start(),
         Action::Status => println!("Status"),
     }
 }
