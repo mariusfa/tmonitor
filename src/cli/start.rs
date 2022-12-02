@@ -1,8 +1,4 @@
-use std::{
-    error::Error,
-    fs::{create_dir_all, File},
-    io,
-};
+use std::fs::{create_dir_all, File};
 
 use dirs::home_dir;
 
@@ -18,14 +14,10 @@ fn get_file_path() -> std::path::PathBuf {
     file_path
 }
 
-fn create_if_not_exist(file_path: std::path::PathBuf) -> io::Result<()> {
+fn create_if_not_exist(file_path: std::path::PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     if !file_path.exists() {
         println!("time.txt not found. Creating time.txt...");
-        create_dir_all(
-            file_path
-                .parent()
-                .expect("Failed to get parent directory from file path"),
-        )?;
+        create_dir_all(file_path.parent().ok_or("Find parent dir failed")?)?;
         File::create(file_path)?;
     }
     Ok(())
