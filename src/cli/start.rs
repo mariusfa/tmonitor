@@ -1,11 +1,17 @@
 use chrono::{Local, TimeZone};
 use dirs::home_dir;
-use std::fs::{self, create_dir_all, File};
+use std::{
+    fs::{self, create_dir_all, File},
+    path::PathBuf,
+};
 
-pub fn start() {
+use crate::result::ResultWrap;
+
+pub fn start() -> ResultWrap<()> {
     println!("Start");
-    let file_path = get_file_path();
-    create_if_not_exist(&file_path).expect("Failed to create file");
+
+    let file_path = get_file_path()?;
+    create_if_not_exist(&file_path)?;
 
     let contents = fs::read_to_string(&file_path).expect("read failed");
 
@@ -31,15 +37,16 @@ pub fn start() {
             fs::write(file_path, lines.join("\n")).expect("oops");
         }
     }
+    Ok(())
 }
 
-fn get_file_path() -> std::path::PathBuf {
-    let home_dir = home_dir().expect("Failed to get home directory");
+fn get_file_path() -> ResultWrap<PathBuf> {
+    let home_dir = home_dir().ok_or("Failed to resolve home directory")?;
     let file_path = std::path::Path::new(&home_dir).join(".tmonitor/time.txt");
-    file_path
+    Ok(file_path)
 }
 
-fn create_if_not_exist(file_path: &std::path::PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+fn create_if_not_exist(file_path: &std::path::PathBuf) -> ResultWrap<()> {
     if !file_path.exists() {
         println!("time.txt not found. Creating time.txt...");
         create_dir_all(file_path.parent().ok_or("Find parent dir failed")?)?;

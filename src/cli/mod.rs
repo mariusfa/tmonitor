@@ -27,7 +27,7 @@ pub fn perform_action(action: Action) {
     match action {
         Action::Help => help::help(),
         Action::TooManyArgs => println!("Too many args"),
-        Action::Start => start::start(),
+        Action::Start => start::start().unwrap(),
         Action::Status => println!("Status"),
     }
 }
