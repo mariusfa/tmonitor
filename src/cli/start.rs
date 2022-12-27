@@ -9,32 +9,34 @@ use crate::result::ResultWrap;
 
 pub fn start() -> ResultWrap<()> {
     println!("Start");
-
+    
     let file_path = get_file_path()?;
     create_if_not_exist(&file_path)?;
 
-    let contents = fs::read_to_string(&file_path).expect("read failed");
-
-    if contents.len() == 0 {
-        set_first_timestamp(&file_path);
-    } else {
-        let mut lines: Vec<&str> = contents.split("\n").collect();
-        let last_line_index = lines.len() - 1;
-        let (first, second) = extract_timstamps_from_line(lines[last_line_index]);
-
-        let now_timestamp = Local::now().timestamp();
-
-        if is_today(second, now_timestamp) {
-            let updated_line = create_line(first, now_timestamp.to_string().as_str());
-            lines[last_line_index] = updated_line.as_str();
-            fs::write(file_path, lines.join("\n")).expect("oops");
+    loop {
+        let contents = fs::read_to_string(&file_path)?;
+    
+        if contents.len() == 0 {
+            set_first_timestamp(&file_path);
         } else {
-            let new_line = create_line(
-                now_timestamp.to_string().as_str(),
-                now_timestamp.to_string().as_str(),
-            );
-            lines.push(new_line.as_str());
-            fs::write(file_path, lines.join("\n")).expect("oops");
+            let mut lines: Vec<&str> = contents.split("\n").collect();
+            let last_line_index = lines.len() - 1;
+            let (first, second) = extract_timstamps_from_line(lines[last_line_index]);
+    
+            let now_timestamp = Local::now().timestamp();
+    
+            if is_today(second, now_timestamp) {
+                let updated_line = create_line(first, now_timestamp.to_string().as_str());
+                lines[last_line_index] = updated_line.as_str();
+                fs::write(&file_path, lines.join("\n"))?;
+            } else {
+                let new_line = create_line(
+                    now_timestamp.to_string().as_str(),
+                    now_timestamp.to_string().as_str(),
+                );
+                lines.push(new_line.as_str());
+                fs::write(&file_path, lines.join("\n"))?;
+            }
         }
     }
     Ok(())
