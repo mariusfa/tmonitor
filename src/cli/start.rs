@@ -3,6 +3,8 @@ use dirs::home_dir;
 use std::{
     fs::{self, create_dir_all, File},
     path::PathBuf,
+    thread,
+    time
 };
 
 use crate::result::ResultWrap;
@@ -38,8 +40,8 @@ pub fn start() -> ResultWrap<()> {
                 fs::write(&file_path, lines.join("\n"))?;
             }
         }
+        thread::sleep(time::Duration::from_secs(60));
     }
-    Ok(())
 }
 
 fn get_file_path() -> ResultWrap<PathBuf> {
@@ -54,7 +56,7 @@ fn create_if_not_exist(file_path: &std::path::PathBuf) -> ResultWrap<()> {
         create_dir_all(file_path.parent().ok_or("Find parent dir failed")?)?;
         File::create(file_path)?;
     } else {
-        println!("time.txt found. Updateing time.txt...");
+        println!("time.txt found. Updating time.txt...");
     }
     Ok(())
 }
