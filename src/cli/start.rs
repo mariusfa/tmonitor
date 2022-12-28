@@ -1,18 +1,16 @@
 use chrono::{Local, TimeZone};
-use dirs::home_dir;
 use std::{
     fs::{self, create_dir_all, File},
-    path::PathBuf,
     thread,
     time
 };
 
-use crate::result::ResultWrap;
+use crate::{result::ResultWrap, cli::file_utils};
 
 pub fn start() -> ResultWrap<()> {
     println!("Start");
     
-    let file_path = get_file_path()?;
+    let file_path = file_utils::get_file_path()?;
     create_if_not_exist(&file_path)?;
 
     loop {
@@ -42,12 +40,6 @@ pub fn start() -> ResultWrap<()> {
         }
         thread::sleep(time::Duration::from_secs(60));
     }
-}
-
-fn get_file_path() -> ResultWrap<PathBuf> {
-    let home_dir = home_dir().ok_or("Failed to resolve home directory")?;
-    let file_path = std::path::Path::new(&home_dir).join(".tmonitor/time.txt");
-    Ok(file_path)
 }
 
 fn create_if_not_exist(file_path: &std::path::PathBuf) -> ResultWrap<()> {

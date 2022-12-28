@@ -1,5 +1,7 @@
+mod file_utils;
 mod help;
 mod start;
+mod status;
 
 #[derive(Debug, PartialEq)]
 pub enum Action {
@@ -27,7 +29,7 @@ pub fn perform_action(action: Action) {
     match action {
         Action::Help => help::help(),
         Action::TooManyArgs => println!("Too many args"),
-        Action::Start => start::start().unwrap(),
-        Action::Status => println!("Status"),
+        Action::Start => start::start().expect("Failed to start"),
+        Action::Status => status::status().expect("Failed to get status"),
     }
 }
