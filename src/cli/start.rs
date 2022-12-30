@@ -1,31 +1,30 @@
 use chrono::{Local, TimeZone};
 use std::{
     fs::{self, create_dir_all, File},
-    thread,
-    time
+    thread, time,
 };
 
-use crate::{result::ResultWrap, cli::file_utils};
+use crate::{cli::file_utils, result::ResultWrap};
 
 pub fn start() -> ResultWrap<()> {
     println!("Start");
-    
+
     let file_path = file_utils::get_file_path()?;
     create_if_not_exist(&file_path)?;
 
     loop {
         let contents = fs::read_to_string(&file_path)?;
-    
+
         if contents.len() == 0 {
             set_first_timestamp(&file_path);
         } else {
             let mut lines: Vec<&str> = contents.split("\n").collect();
             let last_line_index = lines.len() - 1;
             let (first, second) = extract_timstamps_from_line(lines[last_line_index]);
-    
+
             let now_timestamp = Local::now().timestamp();
-    
-            if is_today(second, now_timestamp) {
+
+            if is_today(second, now_timestamp)? {
                 let updated_line = create_line(first, now_timestamp.to_string().as_str());
                 lines[last_line_index] = updated_line.as_str();
                 fs::write(&file_path, lines.join("\n"))?;
@@ -62,25 +61,26 @@ fn extract_timstamps_from_line(line: &str) -> (&str, &str) {
     let timestamps_last_line: Vec<&str> = line.split_whitespace().collect();
     let first = timestamps_last_line[0];
     let second = timestamps_last_line[1];
-    return (first, second);
+    (first, second)
 }
 
-fn is_today(last_timestamp: &str, now_timestamp: i64) -> bool {
-    let last_timestamp: i64 = last_timestamp.parse().unwrap();
+fn is_today(last_timestamp: &str, now_timestamp: i64) -> ResultWrap<bool> {
+    let last_timestamp: i64 = last_timestamp.parse()?;
     let last_date = Local
         .timestamp_opt(last_timestamp, 0)
-        .unwrap()
+        .single()
+        .ok_or("Failed to get date")?
         .format("%d %m %Y")
         .to_string();
 
     let now_date = Local
         .timestamp_opt(now_timestamp, 0)
         .single()
-        .unwrap()
+        .ok_or("Failed to get date")?
         .format("%d %m %Y")
         .to_string();
 
-    return last_date == now_date;
+    Ok(last_date == now_date)
 }
 
 fn create_line(first: &str, second: &str) -> String {
@@ -88,5 +88,5 @@ fn create_line(first: &str, second: &str) -> String {
     line.push_str(first);
     line.push_str(" ");
     line.push_str(second);
-    return line;
+    line
 }

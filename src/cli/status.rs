@@ -21,25 +21,24 @@ pub fn status() -> ResultWrap<()> {
         let start: i64 = start.parse()?;
         let end: i64 = end.parse()?;
 
-        let start_date = get_date(start);
-        let end_date = get_date(end);
+        let start_date = get_date(start)?;
 
-        let diff_sec  = end - start;
+        let diff_sec = end - start;
         let diff_hour = (diff_sec as f64) / 3600.0;
         total_secs += diff_sec;
-        
 
-        println!("{start_date} -- {end_date}  -  {diff_hour}h");
+        println!("{start_date}  -  {diff_hour:.2}h");
     }
     let total_hours = (total_secs as f64) / 3600.0;
-    println!("Total time: {total_hours}h");
+    println!("Total time: {total_hours:.2}h");
     Ok(())
 }
 
-fn get_date(timestamp: i64) -> String {
-    return Local
+fn get_date(timestamp: i64) -> ResultWrap<String> {
+    Ok(Local
         .timestamp_opt(timestamp, 0)
-        .unwrap()
+        .single()
+        .ok_or("Failed to convert to date")?
         .format("%d.%m.%Y")
-        .to_string();
+        .to_string())
 }
